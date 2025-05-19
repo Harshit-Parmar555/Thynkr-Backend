@@ -73,3 +73,15 @@ export const logout = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// User checkAuth controller
+export const checkAuth = async (req, res) => {
+  try {
+    return res
+      .status(200)
+      .json({ success: true, message: "Authenticated", user: req.user });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
