@@ -47,3 +47,74 @@ export const fetchAllIdeas = async (req, res) => {
     });
   }
 };
+
+// Add idea controller
+export const postIdea = async (req, res) => {
+  try {
+    const { title, description, pitch, category } = req.body;
+
+    if (!title || !description || !pitch || !category) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide all fields" });
+    }
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Cover image is required" });
+    }
+
+    // Upload the image
+    const coverImgURL = await uploadImageToFirebase(req.file);
+    if (!coverImgURL) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Error in cover image upload" });
+    }
+
+    // Start Transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // Create new startup entry
+      const newIdea = new Idea({
+        title,
+        description,
+        pitch,
+        category,
+        coverImage: coverImgURL,
+        user: req.user._id, // req.user is already set by middleware
+      });
+
+      await newIdea.save({ session });
+
+      // Find the user and update their starts array
+      const user = await User.findById(req.user._id).session(session);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      user.ideas.push(newIdea);
+      await user.save({ session });
+
+      await session.commitTransaction();
+      session.endSession();
+
+      return res.status(200).json({
+        success: true,
+        message: "Idea Added Successfully",
+        idea: newIdea,
+      });
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
