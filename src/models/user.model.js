@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please Provide Avatar"],
       trim: true,
     },
+    ideas: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "idea",
+      },
+    ],
   },
   { timestamps: true }
 );
