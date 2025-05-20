@@ -118,3 +118,43 @@ export const postIdea = async (req, res) => {
     });
   }
 };
+
+// Delete start controller
+export const deleteIdea = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Id not provided" });
+    }
+
+    const idea = await Idea.findById(id);
+
+    if (!idea) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Idea not found" });
+    }
+
+    // Ensure only the owner can delete
+    if (idea.user.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized action" });
+    }
+
+    // Remove from user's startups list
+    await User.findByIdAndUpdate(req.user._id, { $pull: { ideas: id } });
+
+    deleteImageFromFirebase(idea.coverImage); // Delete image from Firebase
+    await idea.deleteOne();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Idea deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

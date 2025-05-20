@@ -1,5 +1,9 @@
 import express from "express";
-import { fetchAllIdeas, postIdea } from "../controllers/idea.controller.js";
+import {
+  fetchAllIdeas,
+  postIdea,
+  deleteIdea,
+} from "../controllers/idea.controller.js";
 import { protectedRoute } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multer.js";
 
@@ -12,5 +16,6 @@ ideaRouter.post(
   upload.single("coverImage"),
   postIdea
 );
+ideaRouter.delete("/delete-idea/:id", protectedRoute, deleteIdea);
 
 export default ideaRouter;
