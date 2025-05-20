@@ -57,9 +57,11 @@ const PORT = process.env.PORT || 4000;
 // Routes
 import authRouter from "./src/routes/auth.route.js";
 import ideaRouter from "./src/routes/idea.route.js";
+import userRouter from "./src/routes/user.route.js";
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/idea", ideaRouter);
+app.use("/api/v1/user", userRouter);
 
 // App started
 connectDb()
