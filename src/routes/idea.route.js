@@ -3,6 +3,7 @@ import {
   fetchAllIdeas,
   postIdea,
   deleteIdea,
+  fetchIdeaById,
 } from "../controllers/idea.controller.js";
 import { protectedRoute } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multer.js";
@@ -17,5 +18,6 @@ ideaRouter.post(
   postIdea
 );
 ideaRouter.delete("/delete-idea/:id", protectedRoute, deleteIdea);
+ideaRouter.get("/fetch-idea-by-id/:id", fetchIdeaById);
 
 export default ideaRouter;

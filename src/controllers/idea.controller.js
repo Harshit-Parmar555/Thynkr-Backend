@@ -158,3 +158,31 @@ export const deleteIdea = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const fetchIdeaById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Id not provided" });
+    }
+
+    const idea = await Idea.findById(id).populate("user");
+
+    if (!idea) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Idea not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Idea fetched successfully",
+      idea,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+}
