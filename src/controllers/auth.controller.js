@@ -6,7 +6,6 @@ import { generateJwt } from "../utils/jwt.js";
 // Checking environment
 const isProduction = process.env.NODE_ENV === "production";
 
-// User signup controller
 export const signup = async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -28,11 +27,13 @@ export const signup = async (req, res) => {
     const { name, picture, email } = decodedIdToken;
 
     // Check if user exists in database
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email }).populate("ideas");
 
     if (!user) {
       user = new User({ username: name, email, profilePicture: picture });
       await user.save();
+      // Populate ideas after saving
+      user = await User.findById(user._id).populate("ideas");
     }
 
     const token = generateJwt(user._id);
@@ -77,9 +78,11 @@ export const logout = async (req, res) => {
 // User checkAuth controller
 export const checkAuth = async (req, res) => {
   try {
+    // Populate ideas for the authenticated user
+    const user = await User.findById(req.user._id).populate("ideas");
     return res
       .status(200)
-      .json({ success: true, message: "Authenticated", user: req.user });
+      .json({ success: true, message: "Authenticated", user });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
