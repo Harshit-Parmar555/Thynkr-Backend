@@ -27,13 +27,19 @@ export const signup = async (req, res) => {
     const { name, picture, email } = decodedIdToken;
 
     // Check if user exists in database
-    let user = await User.findOne({ email }).populate("ideas");
+    let user = await User.findOne({ email }).populate({
+      path: "ideas",
+      populate: { path: "user" },
+    });
 
     if (!user) {
       user = new User({ username: name, email, profilePicture: picture });
       await user.save();
-      // Populate ideas after saving
-      user = await User.findById(user._id).populate("ideas");
+      // Populate ideas and their user after saving
+      user = await User.findById(user._id).populate({
+        path: "ideas",
+        populate: { path: "user" },
+      });
     }
 
     const token = generateJwt(user._id);
@@ -79,7 +85,11 @@ export const logout = async (req, res) => {
 export const checkAuth = async (req, res) => {
   try {
     // Populate ideas for the authenticated user
-    const user = await User.findById(req.user._id).populate("ideas");
+    const user = await User.findById(req.user._id).populate({
+      path: "ideas",
+      populate: { path: "user" },
+    });
+
     return res
       .status(200)
       .json({ success: true, message: "Authenticated", user });
